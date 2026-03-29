@@ -918,7 +918,7 @@ function renderResults(){
     {lbl:'Análisis de argumento oral',   pct:Math.round(lPct*.88+(lPct>70?8:0)), col:'var(--teal)'},
     {lbl:'Expresión escrita académica',  pct:wPct, col:'var(--purple)'},
     {lbl:'Vocabulario académico (C1)',   pct:Math.min(100,wPct+(hasAdv?12:0)+(hasHedge?8:0)), col:'var(--purple)'},
-    {lbl:'Contraargumento',             pct:Math.min(100,hasCA?Math.max(60,wPct):Math.max(0,wPct-25)), col:'var(--gold)'},
+    {lbl:'Contraargumento',             pct:Math.min(100,hasCA?Math.max(60,wPct):Math.max(0,wPct-25)), col:'var(--gold)'}
   ];
 
   const imps=[];
