@@ -778,9 +778,11 @@ function pick(sec,qi,oi){
     if(i===q.ans) el.classList.add('correct');
     else if(i===oi&&!correct) el.classList.add('wrong');
   });
-  if (!card || !num || !fb) return;
-  const num =document.getElementById(`qn-${sec}-${qi}`);
-  const fb  =document.getElementById(`qfb-${sec}-${qi}`);
+  const card = document.getElementById(`qc-${sec}-${qi}`);
+const num  = document.getElementById(`qn-${sec}-${qi}`);
+const fb   = document.getElementById(`qfb-${sec}-${qi}`);
+
+if (!card || !num || !fb) return;
   card.classList.add(correct?'ok':'fail');
   num.textContent=correct?'✓':'✗';
   fb.innerHTML=`${correct?'✅ Correct.':'❌ Correct answer: <strong>'+q.opts[q.ans]+'</strong>'}<br><span style="display:block;margin-top:4px;opacity:.85">${q.exp}</span>`;
