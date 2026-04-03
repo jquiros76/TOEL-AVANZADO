@@ -829,7 +829,9 @@ function toggleAudio(){
   const btn=document.getElementById('play-btn');
   const wbs=document.querySelectorAll('.wb');
   if(speeching){
-    speechSynthesis.cancel(); speeching=false;
+    if (window.speechSynthesis) {
+  speechSynthesis.cancel();
+}
     btn.textContent='▶'; btn.classList.remove('playing');
     wbs.forEach(w=>w.classList.remove('on'));
     return;
