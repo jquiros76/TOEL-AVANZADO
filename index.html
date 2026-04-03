@@ -611,24 +611,38 @@ let speechRate = 0.88;
 // ════════════════════════════
 // NAVIGATION
 // ════════════════════════════
+  stopAudio();
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('screen-'+id).classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); }
 
 function goSection(idx){
+  stopAudio();
   curSec = idx;
   show('exam');
   renderIntro(SECS[idx]);
 }
 
 function prevSec(){
-  if(curSec>0){ saveSec(); curSec--; renderIntro(SECS[curSec]); }
+  stopAudio();
+  if(curSec>0){
+    saveSec();
+    curSec--;
+    renderIntro(SECS[curSec]);
+  }
 }
 
 function nextSec(){
+  stopAudio();
   saveSec();
-  if(curSec < SECS.length-1){ curSec++; renderIntro(SECS[curSec]); }
-  else { calcScores(); renderResults(); show('results'); }
-}
 
+  if(curSec < SECS.length-1){
+    curSec++;
+    renderIntro(SECS[curSec]);
+  } else {
+    calcScores();
+    renderResults();
+    show('results');
+  }
+}
 function saveSec(){ clearInterval(timerInt); if(SECS[curSec]==='writing'){ const ta=document.getElementById('wta'); if(ta){ answers.writing.text=ta.value; answers.writing.wc=countWords(ta.value); }}}
 
 // ════════════════════════════
