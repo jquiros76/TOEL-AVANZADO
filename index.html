@@ -830,6 +830,7 @@ async function toggleAudio(){
   const btn = document.getElementById('play-btn');
   const wbs = document.querySelectorAll('.wb');
 
+  // detener si está sonando
   if (!audioPlayer.paused) {
     audioPlayer.pause();
     audioPlayer.currentTime = 0;
@@ -842,19 +843,37 @@ async function toggleAudio(){
   btn.textContent = '⏳';
 
   try {
-    const res = await fetch('/.netlify/functions/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: EXAM.listening.audio.transcript })
-    });
+    const text = EXAM.listening.audio.transcript;
+    const key = "tts_" + text;
 
-    const data = await res.json();
+    let cached = localStorage.getItem(key);
 
-    if (!data.audio) throw new Error("No audio");
+    if (cached) {
+      audioPlayer.src = cached;
+    } else {
+      const res = await fetch('/.netlify/functions/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
 
-    audioPlayer.src = data.audio;
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("TTS ERROR:", errText);
+        throw new Error("Error en TTS");
+      }
+
+      const data = await res.json();
+
+      if (!data.audio || !data.audio.startsWith("data:audio")) {
+        throw new Error("Audio inválido");
+      }
+
+      localStorage.setItem(key, data.audio);
+      audioPlayer.src = data.audio;
+    }
+
     audioPlayer.playbackRate = speechRate || 1;
-
     await audioPlayer.play();
 
     btn.textContent = '⏹';
