@@ -612,12 +612,15 @@ let speechRate = 0.88;
 // NAVIGATION
 // ════════════════════════════
  function show(id){
-  stopAudio();
+  const current = document.querySelector('.screen.active');
+  if (!current || current.id !== 'screen-' + id) {
+    stopAudio();
+  }
+
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
 }
-
 function goSection(idx){
   stopAudio();
   curSec = idx;
