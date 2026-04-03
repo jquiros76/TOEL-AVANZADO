@@ -475,9 +475,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Barlow',sans-serif;min-h
 </div>
 
 <script>
- if (typeof window !== "undefined" && window.speechSynthesis) {
-  window.speechSynthesis.onvoiceschanged = () => {};
-}
+
 // ════════════════════════════
 // EXAM DATA – ADVANCED B2-C1
 // ════════════════════════════
@@ -826,50 +824,53 @@ function updateRubric(wc,txt){
 function countWords(t){ return t.trim()?t.trim().split(/\s+/).filter(w=>w.length>0).length:0; }
 
 // ── AUDIO ──────────────────────────────────────────────────────────────────
-let audioUtt=null;
-function toggleAudio(){
-  const btn=document.getElementById('play-btn');
-  const wbs=document.querySelectorAll('.wb');
-  if(speeching){
-    speechSynthesis.cancel(); speeching=false;
-    btn.textContent='▶'; btn.classList.remove('playing');
-    wbs.forEach(w=>w.classList.remove('on'));
+let audioPlayer = new Audio();
+
+async function toggleAudio(){
+  const btn = document.getElementById('play-btn');
+  const wbs = document.querySelectorAll('.wb');
+
+  if (!audioPlayer.paused) {
+    audioPlayer.pause();
+    audioPlayer.currentTime = 0;
+    btn.textContent = '▶';
+    btn.classList.remove('playing');
+    wbs.forEach(w => w.classList.remove('on'));
     return;
   }
-  const u=new SpeechSynthesisUtterance(EXAM.listening.audio.transcript);
-  u.lang='en-US'; u.rate=speechRate;
-  if (!window.speechSynthesis) {
-  alert("Tu navegador no soporta audio.");
-  return;
-}
 
-const voices = speechSynthesis.getVoices() || [];
+  btn.textContent = '⏳';
 
-const ev =
-  voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) ||
-  voices.find(v => v.lang && v.lang.startsWith('en-US')) ||
-  voices.find(v => v.lang && v.lang.startsWith('en'));
+  try {
+    const res = await fetch('/.netlify/functions/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: EXAM.listening.audio.transcript })
+    });
 
-if (ev) u.voice = ev;
-  u.onstart=()=>{ speeching=true; btn.textContent='⏹'; btn.classList.add('playing'); wbs.forEach(w=>w.classList.add('on')); document.getElementById('ad-status').textContent='▶ Reproduciendo...'; };
-  u.onend=()=>{ speeching=false; btn.textContent='▶'; btn.classList.remove('playing'); wbs.forEach(w=>w.classList.remove('on')); document.getElementById('ad-status').textContent='✓ Completado'; };
-  u.onerror=()=>{ speeching=false; btn.textContent='▶'; btn.classList.remove('playing'); wbs.forEach(w=>w.classList.remove('on')); };
-  audioUtt=u; speechSynthesis.speak(u);
-}
+    const data = await res.json();
 
-function setSpdBtn(rate,btn){
-  speechRate=rate;
-  document.querySelectorAll('.spd-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-}
+    if (!data.audio) throw new Error("No audio");
 
-function toggleTsc(){
-  const box=document.getElementById('tsc-box');
-  const btn=document.querySelector('.transcript-toggle');
-  if(!box) return;
-  tscShown=!tscShown;
-  box.classList.toggle('show',tscShown);
-  btn.textContent=tscShown?'📄 Ocultar transcript':'📄 Mostrar transcript';
+    audioPlayer.src = data.audio;
+    audioPlayer.playbackRate = speechRate || 1;
+
+    await audioPlayer.play();
+
+    btn.textContent = '⏹';
+    btn.classList.add('playing');
+    wbs.forEach(w => w.classList.add('on'));
+
+    audioPlayer.onended = () => {
+      btn.textContent = '▶';
+      btn.classList.remove('playing');
+      wbs.forEach(w => w.classList.remove('on'));
+    };
+
+  } catch (err) {
+    console.error(err);
+    btn.textContent = '❌';
+  }
 }
 
 // ── TIMER ───────────────────────────────────────────────────────────────────
@@ -1051,13 +1052,18 @@ function animNum(id,from,to,dur){
 function retake(){
   answers={reading:{},listening:{},writing:{text:'',wc:0}};
   scores={reading:0,listening:0,writing:0};
-  timers={}; tscShown=false; speeching=false; if (window.speechSynthesis) {
-  speechSynthesis.cancel();
-}
+  timers={};
+  tscShown=false;
+  speeching=false;
+
+  if (audioPlayer) {
+    audioPlayer.pause();
+    audioPlayer.currentTime = 0;
+  }
+
   goSection(0);
 }
 
-speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
 </script>
 </body>
 </html>
