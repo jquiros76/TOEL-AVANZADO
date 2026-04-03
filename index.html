@@ -475,6 +475,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Barlow',sans-serif;min-h
 </div>
 
 <script>
+  window.speechSynthesis.onvoiceschanged = () => {};
 // ════════════════════════════
 // EXAM DATA – ADVANCED B2-C1
 // ════════════════════════════
@@ -777,7 +778,7 @@ function pick(sec,qi,oi){
     if(i===q.ans) el.classList.add('correct');
     else if(i===oi&&!correct) el.classList.add('wrong');
   });
-  const card=document.getElementById(`qc-${sec}-${qi}`);
+  if (!card || !num || !fb) return;
   const num =document.getElementById(`qn-${sec}-${qi}`);
   const fb  =document.getElementById(`qfb-${sec}-${qi}`);
   card.classList.add(correct?'ok':'fail');
@@ -833,9 +834,19 @@ function toggleAudio(){
   }
   const u=new SpeechSynthesisUtterance(EXAM.listening.audio.transcript);
   u.lang='en-US'; u.rate=speechRate;
-  const voices=speechSynthesis.getVoices();
-  const ev=voices.find(v=>v.lang==='en-US'&&v.name.includes('Google'))||voices.find(v=>v.lang.startsWith('en-US'))||voices.find(v=>v.lang.startsWith('en'));
-  if(ev) u.voice=ev;
+  if (!window.speechSynthesis) {
+  alert("Tu navegador no soporta audio.");
+  return;
+}
+
+const voices = speechSynthesis.getVoices() || [];
+
+const ev =
+  voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) ||
+  voices.find(v => v.lang && v.lang.startsWith('en-US')) ||
+  voices.find(v => v.lang && v.lang.startsWith('en'));
+
+if (ev) u.voice = ev;
   u.onstart=()=>{ speeching=true; btn.textContent='⏹'; btn.classList.add('playing'); wbs.forEach(w=>w.classList.add('on')); document.getElementById('ad-status').textContent='▶ Reproduciendo...'; };
   u.onend=()=>{ speeching=false; btn.textContent='▶'; btn.classList.remove('playing'); wbs.forEach(w=>w.classList.remove('on')); document.getElementById('ad-status').textContent='✓ Completado'; };
   u.onerror=()=>{ speeching=false; btn.textContent='▶'; btn.classList.remove('playing'); wbs.forEach(w=>w.classList.remove('on')); };
@@ -860,7 +871,9 @@ function toggleTsc(){
 // ── TIMER ───────────────────────────────────────────────────────────────────
 function startTimer(sec){
   stopTimer();
-  if(!timers[sec]) timers[sec]=EXAM[sec].time;
+  if (timers[sec] === undefined) {
+  timers[sec] = EXAM[sec].time;
+}
   timerInt=setInterval(()=>{
     timers[sec]--; if(timers[sec]<0) timers[sec]=0;
     const el=document.getElementById('ex-timer');
@@ -1034,7 +1047,9 @@ function animNum(id,from,to,dur){
 function retake(){
   answers={reading:{},listening:{},writing:{text:'',wc:0}};
   scores={reading:0,listening:0,writing:0};
-  timers={}; tscShown=false; speeching=false; speechSynthesis.cancel();
+  timers={}; tscShown=false; speeching=false; if (window.speechSynthesis) {
+  speechSynthesis.cancel();
+}
   goSection(0);
 }
 
