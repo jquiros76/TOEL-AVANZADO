@@ -613,12 +613,16 @@ let speechRate = 0.88;
 // ════════════════════════════
  function show(id){
   const current = document.querySelector('.screen.active');
-  if (!current || current.id !== 'screen-' + id) {
+  if (current) {
     stopAudio();
   }
 
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+id).classList.add('active');
+
+  const target = document.getElementById('screen-'+id);
+  if (!target) return;
+
+  target.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function goSection(idx){
