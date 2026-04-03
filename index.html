@@ -479,6 +479,15 @@ body{background:var(--bg);color:var(--ink);font-family:'Barlow',sans-serif;min-h
 // ════════════════════════════
 // EXAM DATA – ADVANCED B2-C1
 // ════════════════════════════
+
+ let speechRate = 1;
+
+function setSpdBtn(rate, btn){
+  speechRate = rate;
+  document.querySelectorAll('.spd-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
 const EXAM = {
 
 // ── READING ──────────────────────────────────────────────────────────────────
@@ -824,8 +833,24 @@ function updateRubric(wc,txt){
 function countWords(t){ return t.trim()?t.trim().split(/\s+/).filter(w=>w.length>0).length:0; }
 
 // ── AUDIO ──────────────────────────────────────────────────────────────────
+// ── AUDIO ──────────────────────────────────────────────────────────────────
 let audioPlayer = new Audio();
+let speechRate = 1;
 
+// 🔥 CONTROL DE VELOCIDAD
+function setSpdBtn(rate, btn){
+  speechRate = rate;
+
+  // aplicar velocidad en tiempo real
+  if (audioPlayer) {
+    audioPlayer.playbackRate = speechRate;
+  }
+
+  document.querySelectorAll('.spd-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+// 🔊 TOGGLE AUDIO
 async function toggleAudio(){
   const btn = document.getElementById('play-btn');
   const wbs = document.querySelectorAll('.wb');
@@ -848,7 +873,7 @@ async function toggleAudio(){
 
     let cached = localStorage.getItem(key);
 
-    if (cached) {
+    if (cached && cached.startsWith("data:audio")) {
       audioPlayer.src = cached;
     } else {
       const res = await fetch('/.netlify/functions/tts', {
@@ -873,7 +898,9 @@ async function toggleAudio(){
       audioPlayer.src = data.audio;
     }
 
-    audioPlayer.playbackRate = speechRate || 1;
+    // 🔥 aplicar velocidad SIEMPRE antes de play
+    audioPlayer.playbackRate = speechRate;
+
     await audioPlayer.play();
 
     btn.textContent = '⏹';
