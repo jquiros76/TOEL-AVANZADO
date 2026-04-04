@@ -43,7 +43,8 @@ exports.handler = async (event) => {
         model: "gpt-4o-mini-tts",
         input: text,
         voice: "nova",
-        format: "mp3"
+        format: "wav",
+        speed: 0.9
       })
     });
 
